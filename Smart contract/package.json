@@ -1,0 +1,11 @@
+{
+  "name": "MyStaticServer",
+  "version": "0.0.1",
+  "dependencies": {
+    "cassandra-driver": "^3.5.0",
+    "express": "3.3.x",
+    "hashish": "0.0.4",
+    "jquery": "^3.3.1",
+    "web3": "^1.0.0-beta.34"
+  }
+}
