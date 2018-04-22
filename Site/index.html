@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<title>Hackathon - Future Technologies Fund</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="shortcut icon" href="http://ftf.fund/favicon.ico" type="image/x-icon">
+<link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+<script
+  src="https://code.jquery.com/jquery-3.3.1.min.js"
+  integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+  crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
+<script src="http://www.chartjs.org/dist/2.7.2/Chart.js"></script>
+<script src="http://www.chartjs.org/samples/latest/utils.js"></script>
+<script>
+
+	var graph = [];
+
+	var lab = [];
+
+	var pointBackgroundColors = ['grey'];
+
+	function table() {
+			$('#close tr.bad, #close tr.suc').remove();
+			$('#close tr.bad, #close tr.suc').remove();
+
+			graph = [{
+				y: 0
+			}];
+
+			lab = [0];
+
+			pointBackgroundColors = ['grey'];
+
+		  jQuery.get('history.txt', { "_": $.now() }, function(data) {  
+		    data = $.parseJSON(data);
+
+		    $.each(data, function(index, value) {
+			    var tr = '';
+
+
+				lab.push(lab[lab.length-1]+1);
+				graph.push({
+					y: graph[graph.length-1].y+value.orderProfitProcent*value.orderValueProcent
+				});
+
+				tr += '<td>'+value.orderSymbol+'</td>';
+
+				if (value.orderType == 'Long')
+					tr += '<td class="buy">'+value.orderType+'</td>';
+				else 
+					tr += '<td class="short">'+value.orderType+'</td>'; 
+
+				tr += '<td>'+value.orderValueProcent.toFixed(2)+'</td>';
+
+				var t1 = value.orderOpenTime;
+				var date = new Date();
+				date.setTime(t1*1000);
+
+				tr += '<td>'+date.getDate()+'-'+(date.getMonth()<10?'0':'')+date.getMonth()+'-'+date.getFullYear()+' '+(date.getHours()<10?'0':'')+date.getHours()+':'+(date.getMinutes()<10?'0':'') + date.getMinutes()+'</td>'; 
+
+				var t2 = value.orderCloseTime;
+				var date = new Date();
+				date.setTime(t2*1000);
+
+				tr += '<td>'+date.getDate()+'-'+(date.getMonth()<10?'0':'')+date.getMonth()+'-'+date.getFullYear()+' '+(date.getHours()<10?'0':'')+date.getHours()+':'+(date.getMinutes()<10?'0':'') + date.getMinutes()+'</td>'; 
+
+				tr += '<td>'+value.orderOpenPrice+'</td>'; 
+				tr += '<td>'+value.orderClosePrice+'</td>'; 
+				//tr += '<td>'+((value.orderOpenPrice/value.orderClosePrice-1)*100).toFixed(2)+'</td>'; 
+
+				if (value.orderProfitProcent>0)
+					tr += '<td class="pl">'+(value.orderProfitProcent*100).toFixed(2)+'%</td>'; 
+				else
+					tr += '<td class="mn">'+(value.orderProfitProcent*100).toFixed(2)+'%</td>'; 
+
+				if (value.goodOrder == 0) {
+					$("#close tr:first").after('<tr class="bad">'+tr+'</tr>');
+					pointBackgroundColors.push("plum");
+				} else {
+					pointBackgroundColors.push("lightskyblue");
+					$("#close tr:first").after('<tr class="suc">'+tr+'</tr>');
+				}
+
+			}); 
+
+			var ctx = document.getElementById('canvas').getContext('2d');
+
+
+
+		var config = {
+			type: 'line',
+			data: {
+				labels: lab,
+				datasets: [ {
+					label: 'Динамика портфеля',
+					pointBackgroundColor: pointBackgroundColors,
+					borderColor: 'grey',
+					fill: false,
+					data: graph,
+				}]
+			},
+			options: {
+				title: {
+					text: 'Динамика портфеля'
+				},
+				scales: {
+					xAxes: [{
+						scaleLabel: {
+							display: true,
+							labelString: 'Сделка'
+						}
+					}],
+					yAxes: [{
+						scaleLabel: {
+							display: true,
+							labelString: 'Итог (%)'
+						}
+					}]
+				},
+			}
+		};
+
+			window.myLine = new Chart(ctx, config);
+
+
+
+		});
+		}
+
+	$( document ).ready(function() {
+
+		setTimeout(function() { $('.load').css('opacity','0') }, 1000);
+
+		setInterval(function() {
+
+			jQuery.get('op.txt', { "_": $.now() }, function(data) {  
+
+				if (data) {
+			    	data = $.parseJSON(data);
+			    	$('.open').css('display', 'block');
+			    	$('#open').css('display', 'table');
+				} else {
+					$('.open').css('display', 'none');
+				}
+
+				$(".appr").removeClass('appr');
+
+				$.each(data, function(index, value) {
+
+					if ($("#o"+value.orderId).length == 1) {
+						$("#o"+value.orderId).addClass('appr');
+						return;
+					}
+
+					var tr = '';
+
+					tr += '<td>'+value.orderSymbol+'</td>';
+
+					if (value.orderType == 'Long')
+						tr += '<td class="buy">'+value.orderType+'</td>';
+					else 
+						tr += '<td class="short">'+value.orderType+'</td>'; 
+
+					tr += '<td>'+value.orderValueProcent.toFixed(2)+'</td>'; 
+
+					var t1 = value.orderOpenTime;
+					var date = new Date();
+					date.setTime(t1*1000);
+
+					tr += '<td>'+date.getDate()+'-'+(date.getMonth()<10?'0':'')+date.getMonth()+'-'+date.getFullYear()+' '+(date.getHours()<10?'0':'')+date.getHours()+':'+(date.getMinutes()<10?'0':'') + date.getMinutes()+'</td>'; 
+
+					tr += '<td>'+value.orderOpenPrice+'</td>'; 
+
+					$("#open tr:first").after('<tr id="o'+value.orderId+'" class="appr">'+tr+'</tr>');
+
+				}); 
+
+				$( "#open tr" ).each(function( index ) {
+				  if (!$(this).hasClass('appr') && $(this).index()!==0){
+				  	jQuery.get('http://hackathon.ftf.fund/approve.php?id='+$(this).attr('id').slice(1), function(data) { }); 
+				  	setTimeout(function() { table(); }, 1000);
+				  	$(this).remove();
+				  }
+				});
+	    	});
+
+		}, 1000); 
+
+		table();
+
+	});
+
+</script>
+<style>
+	body, html {
+		background-color: black;
+		position: relative;
+		height: 100%;
+		font-family: 'Open Sans', sans-serif;
+	}
+
+	hr {
+		border: none;
+		height: 1px;
+		background: black;
+		margin-top: 15px;
+	}
+
+	.cont {
+		margin: 100px auto;
+		position: relative;
+		width: 900px;
+		background: white;
+		max-width: 90%;
+		padding: 50px;
+		box-sizing: border-box;
+		font-size: 12px;
+	}
+
+	.cont table {
+		width: 100%;
+		text-align: center;
+		vertical-align: center;
+	}
+
+
+
+	.cont table td {
+		padding: 2px 0;
+	}
+
+	.suc {
+		background: rgba(0,191,255,0.1);
+	}
+
+	.bad {
+		background: rgba(128,0,128,0.1);
+	}
+
+	#open td {
+		background: rgba(0,0,0,0.05);
+	}
+
+	.pl {
+		background: rgba(0,255,0,0.1);
+	}
+
+	.mn {
+		background: rgba(255,0,0,0.1);
+	}
+
+	.buy {
+		color: green;
+	}
+
+	.short {
+		color: red;
+	}
+
+	h2 {
+		text-align: center;
+	}
+
+	.load {
+		background: white url(load.gif) center / auto 50% no-repeat;
+		width: 100%;
+		height: 100%;
+		position: absolute;
+		opacity: 1;
+		transition: 1s ease;
+		left: 0;
+		pointer-events: none;
+		top: 0;
+	}
+
+	.nomt {
+		margin-top: 0;
+	}
+
+	.rotate {
+		text-align: center;
+		line-height: 80vh;
+		position: fixed;
+		background: black;
+		width: 100%;
+		height: 100%;
+		color: white;
+		z-index: 999;
+		font-size: 5vw;
+		opacity: 0;
+		pointer-events: none;
+	}
+
+	@media only screen and (orientation: portrait) {
+   .rotate {
+   		opacity: 1;
+   }
+}
+</style>
+</head>
+<body>
+	<div class="rotate">Переверните телефон пожалуйста!</div>
+	<div class="cont">
+		<div style="width:100%">
+			<canvas id="canvas"></canvas>
+		</div>
+		<hr>
+		<div class="load"></div>
+		<h2 class="open">Открытые сделки</h2>
+		<table id="open" class="open">
+			<tr class="appr"> 
+				<th>Пара</th>
+				<th>Тип</th>
+				<th>Объем (%)</th>
+				<th>Дата открытия</th>
+				<th>Цена открытия</th>
+			</tr>
+		</table>
+		<hr class="open">
+		<h2>Закрытые сделки</h2>
+		<table id="close">
+			<tr>
+				<th>Пара</th>
+				<th>Тип</th>
+				<th>Объем (%)</th>
+				<th>Дата открытия</th>
+				<th>Дата закрытия</th>
+				<th>Цена открытия</th>
+				<th>Цена закрытия</th>
+				<th>Итог</th>
+			</tr>
+		</table>
+	</div>
+	<script type="text/javascript">
+		var timeFormat = 'MM/DD/YYYY HH:mm';
+
+		function newDate(days) {
+			console.log(moment().add(days, 'd').toDate())
+			return moment().add(days, 'd').toDate();
+		}
+
+		function newDateString(days) {
+			console.log(moment().add(days, 'd').format(timeFormat))
+			return moment().add(days, 'd').format(timeFormat);
+		}
+
+		var color = Chart.helpers.color;
+		
+
+		var colorNames = Object.keys(window.chartColors);
+		
+
+
+	</script>
+</body> 
+</html> 
