@@ -11,4 +11,4 @@
 Дополнительные идея для улучшения сервиса:
 - Система контроля рисков ([Реализация у конкурентов](https://ru.zulutrade.com/autoprotect-your-account), [подробнее](https://ru.zulutrade.com/zuluguard-guide))
 - Конструкции if..then для автоматизации торговли ([Реализация у конкурентов](https://ru.zulutrade.com/automated-trading))
-- Портфели из трейдеров  ([1](https://www.etoro.com/en/copyfunds/), [2](https://www.etoro.com/en/copyfunds-partners/))
+- Портфели из трейдеров, автоматическая ребалансировка портфелей ([1](https://www.etoro.com/en/copyfunds/), [2](https://www.etoro.com/en/copyfunds-partners/))
