@@ -7,3 +7,6 @@
 * Папка site - исходники сайта hackathon.ftf.fund
 * Папка Smart contract - смарт контракт и js файл, связывающий контракт и бд
 * TraderPlugin.mq4 - плагин трейдера для MT4
+
+Дополнительные идея для улучшения сервиса:
+- Система контроля рисков ([Реализация у конкурентов](https://ru.zulutrade.com/autoprotect-your-account), [подробнее](https://ru.zulutrade.com/zuluguard-guide))
